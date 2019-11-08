@@ -11,7 +11,7 @@ categories = ["development-tools::ffi"]
 license = "MIT"
 
 [lib]
-crate-type = ["staticlib"]
+crate-type = ["dylib"]
 
 [dependencies]
 libc = "0.2"
