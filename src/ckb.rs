@@ -56,18 +56,19 @@ pub unsafe extern "C" fn ckb_load_block_from_template(
 #[no_mangle]
 pub unsafe extern "C" fn ckb_parse_cellbase_witness_script(
     mut output: *mut libc::c_char,
+    output_len: libc::size_t,
     bin: *const libc::c_char,
+    len: libc::size_t,
 ) -> i32 {
     let mut retcode = 0;
-    let bin_str = utils::cstring_to_str(bin);
-    let data = ckb_types::bytes::Bytes::from(bin_str.as_bytes().to_owned().to_vec());
+    let bin_str = std::slice::from_raw_parts(bin as *const u8, len as usize);
+    let data = ckb_types::bytes::Bytes::from(bin_str.to_vec());
     let cellbase_witness = ckb_types::packed::CellbaseWitness::new_unchecked(data);
     let script: ckb_jsonrpc_types::Script = cellbase_witness.lock().into();
     let result = serde_json::to_string(&script);
     if let Ok(json_str) = result {
         let buf = json_str.as_bytes().to_owned();
         let mut buf = buf.into_boxed_slice();
-        let output_len = libc::strlen(output);
         let len = std::cmp::min(output_len, buf.len());
         libc::memcpy(
             output as *mut libc::c_void,
@@ -210,3 +211,4 @@ pub unsafe extern "C" fn ckb_block_calc_pow_hash(
     }
     retcode
 }
+
